@@ -1,0 +1,10 @@
+{
+  "name": "my_app",
+  "env": {
+     "CONFIG_URL": {
+      "description": "Enter config.env url",
+      "value": ""
+    }
+  },
+  "stack": "container"
+}

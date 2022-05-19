@@ -1,0 +1,41 @@
+#!/bin/bash
+#Script creates appropriate folders same as from the torrent and copy to cloud
+#This script use environment variable ENVVAR_CLOUDDRIVE & ENVVAR_CLOUDFOLDER from heroku
+#It also uses variables torrent's hash id and torrent's name from qBittorrent to create the directory
+#Command that put in qBittorrent to run external program (aka the script): /script "%I" "%N"
+#Remember to download and enable the script with execution permission
+
+#Other References https://github.com/qbittorrent/qBittorrent/issues/11042
+
+TEMP_UPLOAD_PATH=$1
+FILENAME=$2
+if [ -z "$3" ]
+then
+    FOLDER_OR_NOFOLDER=""
+else
+    FOLDER_OR_NOFOLDER=$3
+    FOLDER_OR_NOFOLDER=$(echo $FOLDER_OR_NOFOLDER | tr '[:upper:]' '[:lower:]')
+fi
+
+FULL_PATH="/Downloads"
+CLOUD_DRIVE="ENVVAR_CLOUDDRIVE"
+CLOUD_FOLDER="ENVVAR_CLOUDFOLDER"
+FULL_CLOUD_PATH=${CLOUD_DRIVE}"/"${CLOUD_FOLDER}
+
+#touch /Downloads/"$TEMP_UPLOAD_PATH"
+#touch /Downloads/"$TEMP_UPLOAD_PATH"-"$FILENAME"
+
+if [ "$FOLDER_OR_NOFOLDER" = "nofolder" ]
+then
+    rclone move /Downloads/"$FILENAME" "$CLOUD_DRIVE"/
+else
+    mkdir $FULL_PATH/"$TEMP_UPLOAD_PATH"
+
+    #Move downloaded torrent to upload directory
+    mv $FULL_PATH/"$FILENAME" $FULL_PATH/"$TEMP_UPLOAD_PATH"
+
+    #Move all files in upload folder to cloud directory
+    rclone move -P --no-traverse --delete-empty-src-dirs "$FULL_PATH/$TEMP_UPLOAD_PATH/" "$FULL_CLOUD_PATH"
+
+    rm -r "$FULL_PATH/$TEMP_UPLOAD_PATH"
+fi

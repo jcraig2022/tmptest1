@@ -1,0 +1,5 @@
+build:
+  docker:
+    web: Dockerfile
+run:
+  web: bash entrypoint.sh & python3 bgproc0.py & wait;
